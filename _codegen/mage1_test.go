@@ -14,7 +14,7 @@
 
 // +build mage1
 
-package codegen
+package _codegen
 
 func getDataGetEavValueTables() []dataGetEavValueTables {
 	return []dataGetEavValueTables{

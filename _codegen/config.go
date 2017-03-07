@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package codegen
+package _codegen
 
 import (
 	"go/build"
 
-	"github.com/corestoreio/csfw/codegen/tableToStruct/tpl"
+	"github.com/corestoreio/csfw/_codegen/tableToStruct/tpl"
 	"github.com/corestoreio/csfw/util/slices"
 )
 

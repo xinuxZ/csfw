@@ -17,7 +17,7 @@ package main
 import (
 	"sync"
 
-	"github.com/corestoreio/csfw/codegen"
+	"github.com/corestoreio/csfw/_codegen"
 	"github.com/corestoreio/csfw/storage/csdb"
 	"github.com/corestoreio/csfw/storage/dbr"
 	"github.com/corestoreio/errors"
@@ -39,13 +39,13 @@ func Connect(opts ...dbr.ConnectionOption) (*dbr.Connection, error) {
 func main() {
 
 	dbc, err := Connect()
-	codegen.LogFatal(err)
+	_codegen.LogFatal(err)
 	defer dbc.Close()
 	var wg sync.WaitGroup
 
 	mageVersion := detectMagentoVersion(dbc.NewSession())
 
-	for _, tStruct := range codegen.ConfigTableToStruct {
+	for _, tStruct := range _codegen.ConfigTableToStruct {
 		go newGenerator(tStruct, dbc, &wg).setMagentoVersion(mageVersion).run()
 	}
 

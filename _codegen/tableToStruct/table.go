@@ -20,7 +20,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/corestoreio/csfw/codegen"
+	"github.com/corestoreio/csfw/_codegen"
 	"github.com/corestoreio/csfw/storage/csdb"
 	"github.com/corestoreio/csfw/util"
 )
@@ -33,7 +33,7 @@ type OneTable struct {
 	Struct           string
 	Slice            string
 	Table            string
-	GoColumns        codegen.Columns
+	GoColumns        _codegen.Columns
 	Columns          csdb.Columns
 	MethodRecvPrefix string
 	FindByPk         string
@@ -58,27 +58,27 @@ func (ot *OneTable) initTableNames(mageVersion int, pkgName, table string) {
 	ot.Table = table
 	ot.TableName = table
 
-	if mappedName, ok := codegen.TableMapMagento1To2[strings.Replace(table, codegen.TablePrefix, "", 1)]; ok && mageVersion == util.Magento2 {
+	if mappedName, ok := _codegen.TableMapMagento1To2[strings.Replace(table, _codegen.TablePrefix, "", 1)]; ok && mageVersion == util.Magento2 {
 		ot.TableName = mappedName
 	}
 
 	// generate consistent name
 	ot.Name = table
 	// 1. retrieve the mapped name used in Magento2
-	if mappedName, ok := codegen.TableMapMagento1To2[strings.Replace(table, codegen.TablePrefix, "", 1)]; ok {
+	if mappedName, ok := _codegen.TableMapMagento1To2[strings.Replace(table, _codegen.TablePrefix, "", 1)]; ok {
 		ot.Name = mappedName
 	}
 	// 2. Remove the package name from the table name
-	ot.Name = codegen.PrepareVar(pkgName, ot.Name)
+	ot.Name = _codegen.PrepareVar(pkgName, ot.Name)
 
 	ot.Struct = fmt.Sprintf("%s%s", TypePrefix, ot.Name)
 	ot.Slice = fmt.Sprintf("%s%sSlice", TypePrefix, ot.Name)
 }
 
 func (ot *OneTable) initColumns(db *sql.DB, table string) {
-	columns, err := codegen.GetColumns(db, table)
-	codegen.LogFatal(err)
-	codegen.LogFatal(columns.MapSQLToGoDBRType())
+	columns, err := _codegen.GetColumns(db, table)
+	_codegen.LogFatal(err)
+	_codegen.LogFatal(columns.MapSQLToGoDBRType())
 
 	ot.GoColumns = columns
 	ot.Columns = columns.CopyToCSDB()

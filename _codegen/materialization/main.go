@@ -18,7 +18,7 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/corestoreio/csfw/codegen"
+	"github.com/corestoreio/csfw/_codegen"
 	"github.com/corestoreio/csfw/eav"
 	"github.com/corestoreio/csfw/storage/csdb"
 	"github.com/corestoreio/csfw/storage/dbr"
@@ -35,7 +35,7 @@ type context struct {
 	// goSrcPath will be used in conjunction with ImportPath to write a file into that directory
 	goSrcPath string
 	// aat = additional attribute table
-	aat *codegen.AddAttrTables
+	aat *_codegen.AddAttrTables
 }
 
 // Connect creates a new database connection from a DSN stored in an
@@ -53,7 +53,7 @@ func Connect(opts ...dbr.ConnectionOption) (*dbr.Connection, error) {
 
 func newContext() *context {
 	dbc, err := Connect()
-	codegen.LogFatal(err)
+	_codegen.LogFatal(err)
 
 	return &context{
 		wg:        sync.WaitGroup{},

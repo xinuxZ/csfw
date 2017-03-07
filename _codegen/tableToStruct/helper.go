@@ -17,7 +17,7 @@ package main
 import (
 	"sync"
 
-	"github.com/corestoreio/csfw/codegen"
+	"github.com/corestoreio/csfw/_codegen"
 	"github.com/corestoreio/csfw/storage/csdb"
 	"github.com/corestoreio/csfw/storage/dbr"
 	"github.com/corestoreio/csfw/util"
@@ -85,9 +85,9 @@ func isDuplicate(sl []string, st string) bool {
 
 func detectMagentoVersion(dbrSess dbr.SessionRunner) (v magento.Version) {
 
-	allTables, err := codegen.GetTables(dbrSess)
-	codegen.LogFatal(err)
-	v = magento.DetectVersion(codegen.TablePrefix, allTables)
+	allTables, err := _codegen.GetTables(dbrSess)
+	_codegen.LogFatal(err)
+	v = magento.DetectVersion(_codegen.TablePrefix, allTables)
 	return
 }
 

@@ -26,26 +26,26 @@ import (
 	"sync"
 	"text/template"
 
-	"github.com/corestoreio/csfw/codegen"
-	"github.com/corestoreio/csfw/codegen/tableToStruct/tpl"
+	"github.com/corestoreio/csfw/_codegen"
+	"github.com/corestoreio/csfw/_codegen/tableToStruct/tpl"
 	"github.com/corestoreio/csfw/storage/dbr"
 	"github.com/corestoreio/csfw/util/slices"
 )
 
 type generator struct {
-	tts             codegen.TableToStruct
+	tts             _codegen.TableToStruct
 	dbrConn         *dbr.Connection
 	outfile         *os.File
 	tables          []string      // all available tables for which we should at least generate a type definition
 	whiteListTables slices.String // table name in this slice is allowed for generic functions
-	eavValueTables  codegen.TypeCodeValueTable
+	eavValueTables  _codegen.TypeCodeValueTable
 	wg              *sync.WaitGroup
 	// existingMethodSets contains all existing method sets from a package for the Table* types
 	existingMethodSets *duplicateChecker
 	mageVersion        int
 }
 
-func newGenerator(tts codegen.TableToStruct, dbrConn *dbr.Connection, wg *sync.WaitGroup) *generator {
+func newGenerator(tts _codegen.TableToStruct, dbrConn *dbr.Connection, wg *sync.WaitGroup) *generator {
 	wg.Add(1)
 	return &generator{
 		tts:                tts,
@@ -62,14 +62,14 @@ func (g *generator) run() {
 
 	var err error
 	g.outfile, err = os.OpenFile(g.tts.OutputFile.String(), os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
-	codegen.LogFatal(err)
+	_codegen.LogFatal(err)
 	g.appendToFile(tpl.Copy, struct{ Package string }{Package: g.tts.Package}, nil)
 
 	g.initTables()
 	g.runHeader()
 	g.runTable()
 	g.runEAValueTables()
-	codegen.LogFatal(g.outfile.Close())
+	_codegen.LogFatal(g.outfile.Close())
 }
 
 func (g *generator) setMagentoVersion(v int) *generator {
@@ -85,7 +85,7 @@ func (g *generator) analyzePackage() {
 
 	path := filepath.Dir(g.tts.OutputFile.String())
 	pkgs, err := parser.ParseDir(fset, path, nil, parser.AllErrors)
-	codegen.LogFatal(err)
+	_codegen.LogFatal(err)
 
 	var astPkg *ast.Package
 	var ok bool
@@ -126,26 +126,26 @@ func (g *generator) analyzePackage() {
 }
 
 func (g *generator) appendToFile(tpl string, data interface{}, addFM template.FuncMap) {
-	formatted, err := codegen.GenerateCode(g.tts.Package, tpl, data, addFM)
+	formatted, err := _codegen.GenerateCode(g.tts.Package, tpl, data, addFM)
 	if err != nil {
 		fmt.Printf("\n%s\n", formatted)
-		codegen.LogFatal(err)
+		_codegen.LogFatal(err)
 	}
 
 	if _, err := g.outfile.Write(formatted); err != nil {
-		codegen.LogFatal(err)
+		_codegen.LogFatal(err)
 	}
-	codegen.LogFatal(g.outfile.Sync()) // flush immediately to disk to prevent a race condition
+	_codegen.LogFatal(g.outfile.Sync()) // flush immediately to disk to prevent a race condition
 }
 
 func (g *generator) initTables() {
 	var err error
-	g.tables, err = codegen.GetTables(g.dbrConn.NewSession(), codegen.ReplaceTablePrefix(g.tts.SQLQuery))
-	codegen.LogFatal(err)
+	g.tables, err = _codegen.GetTables(g.dbrConn.NewSession(), _codegen.ReplaceTablePrefix(g.tts.SQLQuery))
+	_codegen.LogFatal(err)
 
 	if len(g.tts.EntityTypeCodes) > 0 && g.tts.EntityTypeCodes[0] != "" {
-		g.eavValueTables, err = codegen.GetEavValueTables(g.dbrConn, g.tts.EntityTypeCodes)
-		codegen.LogFatal(err)
+		g.eavValueTables, err = _codegen.GetEavValueTables(g.dbrConn, g.tts.EntityTypeCodes)
+		_codegen.LogFatal(err)
 
 		for _, vTables := range g.eavValueTables {
 			for t := range vTables {
@@ -165,8 +165,8 @@ func (g *generator) initTables() {
 		return
 	}
 
-	g.whiteListTables, err = codegen.GetTables(g.dbrConn.NewSession(), codegen.ReplaceTablePrefix(g.tts.GenericsWhiteList))
-	codegen.LogFatal(err)
+	g.whiteListTables, err = _codegen.GetTables(g.dbrConn.NewSession(), _codegen.ReplaceTablePrefix(g.tts.GenericsWhiteList))
+	_codegen.LogFatal(err)
 }
 
 func (g *generator) runHeader() {
@@ -219,7 +219,7 @@ func (g *generator) getGenericTemplate(tableName string) string {
 
 	// at least we need a type definition
 	if _, err := finalTpl.WriteString(tpl.Type); err != nil {
-		codegen.LogFatal(err)
+		_codegen.LogFatal(err)
 	}
 
 	if false == g.whiteListTables.Contains(tableName) {
@@ -229,23 +229,23 @@ func (g *generator) getGenericTemplate(tableName string) string {
 
 	if isAll || (g.tts.GenericsFunctions&tpl.OptSQL) == tpl.OptSQL {
 		_, err := finalTpl.WriteString(tpl.SQL)
-		codegen.LogFatal(err)
+		_codegen.LogFatal(err)
 	}
 	if isAll || (g.tts.GenericsFunctions&tpl.OptFindBy) == tpl.OptFindBy {
 		_, err := finalTpl.WriteString(tpl.FindBy)
-		codegen.LogFatal(err)
+		_codegen.LogFatal(err)
 	}
 	if isAll || (g.tts.GenericsFunctions&tpl.OptSort) == tpl.OptSort {
 		_, err := finalTpl.WriteString(tpl.Sort)
-		codegen.LogFatal(err)
+		_codegen.LogFatal(err)
 	}
 	if isAll || (g.tts.GenericsFunctions&tpl.OptSliceFunctions) == tpl.OptSliceFunctions {
 		_, err := finalTpl.WriteString(tpl.SliceFunctions)
-		codegen.LogFatal(err)
+		_codegen.LogFatal(err)
 	}
 	if isAll || (g.tts.GenericsFunctions&tpl.OptExtractFromSlice) == tpl.OptExtractFromSlice {
 		_, err := finalTpl.WriteString(tpl.ExtractFromSlice)
-		codegen.LogFatal(err)
+		_codegen.LogFatal(err)
 	}
 	return finalTpl.String()
 }
@@ -256,7 +256,7 @@ func (g *generator) runEAValueTables() {
 	}
 
 	data := struct {
-		TypeCodeValueTables codegen.TypeCodeValueTable
+		TypeCodeValueTables _codegen.TypeCodeValueTable
 	}{
 		TypeCodeValueTables: g.eavValueTables,
 	}

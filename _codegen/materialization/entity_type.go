@@ -19,7 +19,7 @@ import (
 	"io/ioutil"
 	"text/template"
 
-	"github.com/corestoreio/csfw/codegen"
+	"github.com/corestoreio/csfw/_codegen"
 	"github.com/corestoreio/csfw/eav"
 	"github.com/corestoreio/csfw/storage/dbr"
 	"github.com/corestoreio/csfw/util"
@@ -38,30 +38,30 @@ func materializeEntityType(ctx *context) {
 	}
 
 	etData, err := getEntityTypeData(ctx.dbc.NewSession())
-	codegen.LogFatal(err)
+	_codegen.LogFatal(err)
 
 	tplData := &dataContainer{
 		ETypeData:   etData,
 		ImportPaths: getImportPaths(),
-		Package:     codegen.ConfigMaterializationEntityType.Package,
+		Package:     _codegen.ConfigMaterializationEntityType.Package,
 		Tick:        "`",
 	}
 
 	addFM := template.FuncMap{
-		"extractFuncType": codegen.ExtractFuncType,
+		"extractFuncType": _codegen.ExtractFuncType,
 	}
 
-	formatted, err := codegen.GenerateCode(codegen.ConfigMaterializationEntityType.Package, tplEav, tplData, addFM)
+	formatted, err := _codegen.GenerateCode(_codegen.ConfigMaterializationEntityType.Package, tplEav, tplData, addFM)
 	if err != nil {
 		fmt.Printf("\n%s\n", formatted)
-		codegen.LogFatal(err)
+		_codegen.LogFatal(err)
 	}
 
-	codegen.LogFatal(ioutil.WriteFile(codegen.ConfigMaterializationEntityType.OutputFile, formatted, 0600))
+	_codegen.LogFatal(ioutil.WriteFile(_codegen.ConfigMaterializationEntityType.OutputFile, formatted, 0600))
 }
 
 // getEntityTypeData retrieves all EAV models from table eav_entity_type but only those listed in variable
-// codegen.ConfigEntityType. It then applies the mapping data from codegen.ConfigEntityType to the entity_type struct.
+// _codegen.ConfigEntityType. It then applies the mapping data from _codegen.ConfigEntityType to the entity_type struct.
 // Depends on generated code from tableToStruct.
 func getEntityTypeData(dbrSess *dbr.Session) (etc eav.TableEntityTypeSlice, err error) {
 
@@ -73,22 +73,22 @@ func getEntityTypeData(dbrSess *dbr.Session) (etc eav.TableEntityTypeSlice, err 
 	_, err = dbrSess.
 		Select(s.AllColumnAliasQuote(s.Name)...).
 		From(s.Name).
-		Where("entity_type_code IN ?", codegen.ConfigEntityType.Keys()).
+		Where("entity_type_code IN ?", _codegen.ConfigEntityType.Keys()).
 		LoadStructs(&etc)
 	if err != nil {
 		return nil, errgo.Mask(err)
 	}
 
-	for typeCode, mapData := range codegen.ConfigEntityType {
+	for typeCode, mapData := range _codegen.ConfigEntityType {
 		// map the fields from the config struct to the data retrieved from the database.
 		et, err := etc.GetByCode(typeCode)
-		codegen.LogFatal(err)
-		et.EntityModel = codegen.ParseString(mapData.EntityModel, et)
-		et.AttributeModel.String = codegen.ParseString(mapData.AttributeModel, et)
-		et.EntityTable.String = codegen.ParseString(mapData.EntityTable, et)
-		et.IncrementModel.String = codegen.ParseString(mapData.IncrementModel, et)
-		et.AdditionalAttributeTable.String = codegen.ParseString(mapData.AdditionalAttributeTable, et)
-		et.EntityAttributeCollection.String = codegen.ParseString(mapData.EntityAttributeCollection, et)
+		_codegen.LogFatal(err)
+		et.EntityModel = _codegen.ParseString(mapData.EntityModel, et)
+		et.AttributeModel.String = _codegen.ParseString(mapData.AttributeModel, et)
+		et.EntityTable.String = _codegen.ParseString(mapData.EntityTable, et)
+		et.IncrementModel.String = _codegen.ParseString(mapData.IncrementModel, et)
+		et.AdditionalAttributeTable.String = _codegen.ParseString(mapData.AdditionalAttributeTable, et)
+		et.EntityAttributeCollection.String = _codegen.ParseString(mapData.EntityAttributeCollection, et)
 	}
 
 	return etc, nil
@@ -98,12 +98,12 @@ func getImportPaths() []string {
 	var paths util.StringSlice
 
 	var getPath = func(s string) string {
-		ps, err := codegen.ExtractImportPath(s)
-		codegen.LogFatal(err)
+		ps, err := _codegen.ExtractImportPath(s)
+		_codegen.LogFatal(err)
 		return ps
 	}
 
-	for _, et := range codegen.ConfigEntityType {
+	for _, et := range _codegen.ConfigEntityType {
 		paths.Append(
 			getPath(et.EntityModel),
 			getPath(et.AttributeModel),

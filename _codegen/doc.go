@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package codegen is deprecated and generates Go code and is only used in development.
+// Package _codegen is deprecated and generates Go code and is only used in development.
 //
 // Configuration
 //
@@ -31,4 +31,4 @@
 //
 // TODO(CS) Use https://github.com/AOEpeople/MageTestStand for TravisCI
 // TODO(CS): Generate also JSONSchema https://github.com/xeipuuv/gojsonschema along with the Table* types
-package codegen
+package _codegen

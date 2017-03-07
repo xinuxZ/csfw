@@ -23,8 +23,8 @@ import (
 
 	"text/template"
 
-	"github.com/corestoreio/csfw/codegen"
-	"github.com/corestoreio/csfw/codegen/localization/gen"
+	"github.com/corestoreio/csfw/_codegen"
+	"github.com/corestoreio/csfw/_codegen/localization/gen"
 	"golang.org/x/text/unicode/cldr"
 )
 
@@ -43,17 +43,17 @@ func main() {
 	d.SetDirFilter("main", "supplemental")
 	d.SetSectionFilter("localeDisplayNames", "numbers")
 	data, err := d.DecodeZip(r)
-	codegen.LogFatal(err)
+	_codegen.LogFatal(err)
 
 	curW := &bytes.Buffer{}
 	for _, loc := range data.Locales() {
 
-		if false == codegen.ConfigLocalization.EnabledLocale.Include(loc) {
+		if false == _codegen.ConfigLocalization.EnabledLocale.Include(loc) {
 			continue
 		}
 
 		ldml, err := data.LDML(loc)
-		codegen.LogFatal(err)
+		_codegen.LogFatal(err)
 		fmt.Fprintf(os.Stdout, "Generating: %s\n", loc)
 
 		curB := curBuilder{
@@ -65,17 +65,17 @@ func main() {
 	}
 
 	tplData := map[string]interface{}{
-		"Package":       codegen.ConfigLocalization.Package,
+		"Package":       _codegen.ConfigLocalization.Package,
 		"CurrencyDicts": curW.String(),
 	}
 
-	formatted, err := codegen.GenerateCode(codegen.ConfigLocalization.Package, tplCode, tplData, nil)
+	formatted, err := _codegen.GenerateCode(_codegen.ConfigLocalization.Package, tplCode, tplData, nil)
 	if err != nil {
 		fmt.Printf("\n\n%s\n\n", formatted)
-		codegen.LogFatal(err)
+		_codegen.LogFatal(err)
 	}
 
-	codegen.LogFatal(ioutil.WriteFile(codegen.ConfigLocalization.OutputFile, formatted, 0600))
+	_codegen.LogFatal(ioutil.WriteFile(_codegen.ConfigLocalization.OutputFile, formatted, 0600))
 }
 
 type curBuilder struct {
@@ -128,5 +128,5 @@ func (b *curBuilder) generate() {
 	}
 
 	err := template.Must(template.New("tpl_code_unit").Parse(tplCodeUnit)).Execute(b.w, tplData)
-	codegen.LogFatal(err)
+	_codegen.LogFatal(err)
 }
